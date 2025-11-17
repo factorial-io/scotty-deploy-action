@@ -1,0 +1,47 @@
+name: Multi-Environment Deploy
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+jobs:
+  deploy-staging:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Staging
+        uses: factorial-io/scotty-deploy-action@v1
+        with:
+          scotty-server: ${{ secrets.SCOTTY_SERVER }}
+          scotty-token: ${{ secrets.SCOTTY_TOKEN }}
+          app-name: myapp-staging
+          service: web:80
+          ttl: forever
+          env: |
+            ENVIRONMENT=staging
+            DEBUG=true
+
+  deploy-production:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Production
+        uses: factorial-io/scotty-deploy-action@v1
+        with:
+          scotty-server: ${{ secrets.SCOTTY_SERVER }}
+          scotty-token: ${{ secrets.SCOTTY_TOKEN }}
+          app-name: myapp-production
+          service: web:80
+          ttl: forever
+          allow-robots: true
+          env: |
+            ENVIRONMENT=production
+            DEBUG=false

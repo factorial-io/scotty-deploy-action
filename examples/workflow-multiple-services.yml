@@ -1,0 +1,26 @@
+name: Multiple Services
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy Frontend and API
+        uses: factorial-io/scotty-deploy-action@v1
+        with:
+          scotty-server: ${{ secrets.SCOTTY_SERVER }}
+          scotty-token: ${{ secrets.SCOTTY_TOKEN }}
+          app-name: myapp-dev
+          service: |
+            frontend:80
+            api:3000
+          ttl: forever
+          env: |
+            API_URL=https://myapp-dev-api.scotty.example.com
+            FRONTEND_URL=https://myapp-dev-frontend.scotty.example.com

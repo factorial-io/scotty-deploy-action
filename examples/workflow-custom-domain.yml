@@ -1,0 +1,28 @@
+name: Custom Domain
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy with Custom Domain
+        uses: factorial-io/scotty-deploy-action@v1
+        with:
+          scotty-server: ${{ secrets.SCOTTY_SERVER }}
+          scotty-token: ${{ secrets.SCOTTY_TOKEN }}
+          app-name: myapp-production
+          service: |
+            web:80
+            api:3000
+          custom-domain: |
+            www.example.com:web
+            api.example.com:api
+          ttl: forever
+          allow-robots: true
+          basic-auth: ${{ secrets.BASIC_AUTH }}
