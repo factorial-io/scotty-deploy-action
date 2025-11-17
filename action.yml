@@ -1,0 +1,103 @@
+name: 'Scotty Deploy'
+description: 'Deploy docker-compose applications to Scotty (micro-PaaS)'
+author: 'Factorial GmbH'
+branding:
+  icon: 'box'
+  color: 'blue'
+
+inputs:
+  # Required inputs
+  scotty-server:
+    description: 'URL of the Scotty server'
+    required: true
+  scotty-token:
+    description: 'Access token for Scotty authentication'
+    required: true
+  app-name:
+    description: 'Unique name for the application'
+    required: true
+  service:
+    description: 'Service(s) to expose publicly in format SERVICE:PORT (multi-line supported, one per line)'
+    required: false
+
+  # Action control
+  action:
+    description: 'Action to perform: create or destroy'
+    required: false
+    default: 'create'
+
+  # Deployment configuration
+  folder:
+    description: 'Path to folder containing compose.yml'
+    required: false
+    default: '.'
+  app-blueprint:
+    description: 'Use a pre-configured blueprint instead of services'
+    required: false
+    default: ''
+  ttl:
+    description: 'Time to live (e.g., 2h, 30m, 1d, 7d, forever)'
+    required: false
+    default: '24h'
+
+  # Access control
+  basic-auth:
+    description: 'HTTP basic authentication as USERNAME:PASSWORD'
+    required: false
+    default: ''
+  allow-robots:
+    description: 'Allow search engine indexing (default adds X-Robots-Tag: noindex)'
+    required: false
+    default: 'false'
+  destroy-on-ttl:
+    description: 'Destroy app after TTL instead of just stopping it'
+    required: false
+    default: 'false'
+
+  # Advanced configuration
+  custom-domain:
+    description: 'Custom domain mapping(s) in format DOMAIN:SERVICE (multi-line supported, one per line)'
+    required: false
+    default: ''
+  env:
+    description: 'Environment variable(s) in format KEY=VALUE (multi-line supported, one per line)'
+    required: false
+    default: ''
+  env-file:
+    description: 'Path to environment file'
+    required: false
+    default: ''
+  registry:
+    description: 'Private registry name (must be configured on server)'
+    required: false
+    default: ''
+  middleware:
+    description: 'Traefik middleware name(s) (multi-line supported, one per line)'
+    required: false
+    default: ''
+
+  # Tool configuration
+  scottyctl-version:
+    description: 'Docker image tag for scottyctl'
+    required: false
+    default: 'next'
+
+outputs:
+  app-url:
+    description: 'Deployed application URL(s) - multi-line string with one URL per line'
+    value: ${{ steps.create.outputs.app-url }}
+  app-status:
+    description: 'Application status'
+    value: ${{ steps.create.outputs.app-status || steps.destroy.outputs.app-status }}
+  app-name:
+    description: 'Application name (echo of input)'
+    value: ${{ inputs.app-name }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Pull scottyctl Docker image
+      shell: bash
+      run: |
+        echo "Pulling scottyctl:${{ inputs.scottyctl-version }}..."
+        docker pull ghcr.io/factorial-io/scottyctl:${{ inputs.scottyctl-version }}
