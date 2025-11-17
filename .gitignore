@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Secrets (should never be committed)
+.env
+secrets.yml
