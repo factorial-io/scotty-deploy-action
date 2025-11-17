@@ -101,3 +101,116 @@ runs:
       run: |
         echo "Pulling scottyctl:${{ inputs.scottyctl-version }}..."
         docker pull ghcr.io/factorial-io/scottyctl:${{ inputs.scottyctl-version }}
+
+    - name: Create application
+      id: create
+      if: inputs.action == 'create'
+      shell: bash
+      run: |
+        set -e
+
+        echo "Creating Scotty application: ${{ inputs.app-name }}"
+
+        # Build base docker command
+        CMD="docker run --rm"
+        CMD="$CMD -v \"$GITHUB_WORKSPACE:/workspace\""
+        CMD="$CMD -w \"/workspace/${{ inputs.folder }}\""
+        CMD="$CMD -e SCOTTY_SERVER=\"${{ inputs.scotty-server }}\""
+        CMD="$CMD -e SCOTTY_ACCESS_TOKEN=\"${{ inputs.scotty-token }}\""
+        CMD="$CMD ghcr.io/factorial-io/scottyctl:${{ inputs.scottyctl-version }}"
+        CMD="$CMD app:create ${{ inputs.app-name }}"
+        CMD="$CMD --folder ."
+
+        # Add services (multi-line input)
+        if [ -n "${{ inputs.service }}" ]; then
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              CMD="$CMD --service \"$line\""
+            fi
+          done <<< "${{ inputs.service }}"
+        fi
+
+        # Add app-blueprint if specified
+        if [ -n "${{ inputs.app-blueprint }}" ]; then
+          CMD="$CMD --app-blueprint \"${{ inputs.app-blueprint }}\""
+        fi
+
+        # Add TTL
+        if [ -n "${{ inputs.ttl }}" ]; then
+          CMD="$CMD --ttl \"${{ inputs.ttl }}\""
+        fi
+
+        # Add basic auth
+        if [ -n "${{ inputs.basic-auth }}" ]; then
+          CMD="$CMD --basic-auth \"${{ inputs.basic-auth }}\""
+        fi
+
+        # Add boolean flags
+        if [ "${{ inputs.allow-robots }}" = "true" ]; then
+          CMD="$CMD --allow-robots"
+        fi
+
+        if [ "${{ inputs.destroy-on-ttl }}" = "true" ]; then
+          CMD="$CMD --destroy-on-ttl"
+        fi
+
+        # Add custom domains (multi-line input)
+        if [ -n "${{ inputs.custom-domain }}" ]; then
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              CMD="$CMD --custom-domain \"$line\""
+            fi
+          done <<< "${{ inputs.custom-domain }}"
+        fi
+
+        # Add environment variables (multi-line input)
+        if [ -n "${{ inputs.env }}" ]; then
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              CMD="$CMD --env \"$line\""
+            fi
+          done <<< "${{ inputs.env }}"
+        fi
+
+        # Add env-file
+        if [ -n "${{ inputs.env-file }}" ]; then
+          CMD="$CMD --env-file \"${{ inputs.env-file }}\""
+        fi
+
+        # Add registry
+        if [ -n "${{ inputs.registry }}" ]; then
+          CMD="$CMD --registry \"${{ inputs.registry }}\""
+        fi
+
+        # Add middleware (multi-line input)
+        if [ -n "${{ inputs.middleware }}" ]; then
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              CMD="$CMD --middleware \"$line\""
+            fi
+          done <<< "${{ inputs.middleware }}"
+        fi
+
+        # Execute command and capture output
+        echo "Executing: $CMD"
+        OUTPUT=$(eval $CMD 2>&1)
+        EXIT_CODE=$?
+
+        echo "$OUTPUT"
+
+        if [ $EXIT_CODE -ne 0 ]; then
+          echo "Failed to create application"
+          exit $EXIT_CODE
+        fi
+
+        # Extract URLs (all lines containing https://)
+        URLS=$(echo "$OUTPUT" | grep -o 'https://[^ ]*' || echo "")
+        echo "app-url<<EOF" >> $GITHUB_OUTPUT
+        echo "$URLS" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+        # Extract status (best effort)
+        STATUS=$(echo "$OUTPUT" | grep -i "status" | head -1 | awk '{print $NF}' || echo "created")
+        echo "app-status=$STATUS" >> $GITHUB_OUTPUT
+
+        echo "Application created successfully"
