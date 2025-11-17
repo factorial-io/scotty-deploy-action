@@ -96,11 +96,11 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Pull scottyctl Docker image
+    - name: Pull scotty Docker image
       shell: bash
       run: |
-        echo "Pulling scottyctl:${{ inputs.scottyctl-version }}..."
-        docker pull ghcr.io/factorial-io/scottyctl:${{ inputs.scottyctl-version }}
+        echo "Pulling scotty:${{ inputs.scottyctl-version }}..."
+        docker pull ghcr.io/factorial-io/scotty:${{ inputs.scottyctl-version }}
 
     - name: Create application
       id: create
@@ -117,8 +117,8 @@ runs:
         CMD="$CMD -w \"/workspace/${{ inputs.folder }}\""
         CMD="$CMD -e SCOTTY_SERVER=\"${{ inputs.scotty-server }}\""
         CMD="$CMD -e SCOTTY_ACCESS_TOKEN=\"${{ inputs.scotty-token }}\""
-        CMD="$CMD ghcr.io/factorial-io/scottyctl:${{ inputs.scottyctl-version }}"
-        CMD="$CMD app:create ${{ inputs.app-name }}"
+        CMD="$CMD ghcr.io/factorial-io/scotty:${{ inputs.scottyctl-version }}"
+        CMD="$CMD /app/scottyctl app:create ${{ inputs.app-name }}"
         CMD="$CMD --folder ."
 
         # Add services (multi-line input)
@@ -228,8 +228,8 @@ runs:
         OUTPUT=$(docker run --rm \
           -e SCOTTY_SERVER="${{ inputs.scotty-server }}" \
           -e SCOTTY_ACCESS_TOKEN="${{ inputs.scotty-token }}" \
-          ghcr.io/factorial-io/scottyctl:${{ inputs.scottyctl-version }} \
-          app:destroy ${{ inputs.app-name }} 2>&1)
+          ghcr.io/factorial-io/scotty:${{ inputs.scottyctl-version }} \
+          /app/scottyctl app:destroy ${{ inputs.app-name }} 2>&1)
 
         EXIT_CODE=$?
 
