@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+    environment:
+      - PORT=3000
+    volumes:
+      - ./data:/app/data
+
+# Note: Scotty builds images on the server
+# Note: Make sure your build context doesn't include large files
+# Note: Use .dockerignore to exclude unnecessary files

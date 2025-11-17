@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  web:
+    image: nginx:alpine
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+
+# Note: No port mappings needed - Scotty handles this automatically
+# Note: No Traefik labels needed - Scotty adds these automatically
+# Note: No VIRTUAL_HOST needed - Scotty configures routing automatically
