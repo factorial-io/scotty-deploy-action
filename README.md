@@ -176,12 +176,14 @@ Use a pre-configured blueprint:
 
 ## How Scotty Works
 
-Scotty automatically handles several things for you:
+[Scotty](https://scotty.factorial.io) is a micro-PaaS that manages docker-compose-based applications with automatic routing and lifecycle management.
 
-✅ **SSL Certificates**: Automatic HTTPS with Let's Encrypt
-✅ **Service Discovery**: Internal DNS for service-to-service communication
-✅ **Load Balancing**: Traefik-based routing and load balancing
-✅ **Health Checks**: Automatic container health monitoring
+**What Scotty does for you:**
+
+✅ **Traefik Configuration**: Automatically configures Traefik reverse proxy for routing traffic to your services
+✅ **SSL Certificates**: Automatic HTTPS via Traefik with Let's Encrypt
+✅ **Web UI**: Provides a user interface to control, inspect, and manage your running applications
+✅ **Lifecycle Management**: Handles app creation, starting, stopping, and destruction with TTL-based auto-stopping
 
 ### What NOT to Include in docker-compose.yml
 
