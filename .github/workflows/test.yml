@@ -1,0 +1,48 @@
+name: Test Action
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy test application
+        id: deploy
+        uses: ./
+        with:
+          scotty-server: https://app.scotty-testbed.factorial.io
+          scotty-token: ${{ secrets.SCOTTY_TESTBED_TOKEN }}
+          app-name: scotty-action-test-${{ github.run_id }}
+          service: web:80
+          folder: test
+          ttl: 1d
+
+      - name: Verify deployment
+        run: |
+          echo "Deployment URL: ${{ steps.deploy.outputs.app-url }}"
+          echo "Deployment Status: ${{ steps.deploy.outputs.app-status }}"
+          echo "App Name: ${{ steps.deploy.outputs.app-name }}"
+
+          # Check that we got a URL
+          if [ -z "${{ steps.deploy.outputs.app-url }}" ]; then
+            echo "ERROR: No deployment URL received"
+            exit 1
+          fi
+
+          echo "Deployment successful!"
+
+      - name: Cleanup - Destroy test application
+        if: always()
+        uses: ./
+        with:
+          scotty-server: https://app.scotty-testbed.factorial.io
+          scotty-token: ${{ secrets.SCOTTY_TESTBED_TOKEN }}
+          app-name: scotty-action-test-${{ github.run_id }}
+          action: destroy
