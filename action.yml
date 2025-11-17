@@ -214,3 +214,32 @@ runs:
         echo "app-status=$STATUS" >> $GITHUB_OUTPUT
 
         echo "Application created successfully"
+
+    - name: Destroy application
+      id: destroy
+      if: inputs.action == 'destroy'
+      shell: bash
+      run: |
+        set -e
+
+        echo "Destroying Scotty application: ${{ inputs.app-name }}"
+
+        # Build docker command
+        OUTPUT=$(docker run --rm \
+          -e SCOTTY_SERVER="${{ inputs.scotty-server }}" \
+          -e SCOTTY_ACCESS_TOKEN="${{ inputs.scotty-token }}" \
+          ghcr.io/factorial-io/scottyctl:${{ inputs.scottyctl-version }} \
+          app:destroy ${{ inputs.app-name }} 2>&1)
+
+        EXIT_CODE=$?
+
+        echo "$OUTPUT"
+
+        if [ $EXIT_CODE -ne 0 ]; then
+          echo "Failed to destroy application"
+          exit $EXIT_CODE
+        fi
+
+        echo "app-status=destroyed" >> $GITHUB_OUTPUT
+
+        echo "Application destroyed successfully"
