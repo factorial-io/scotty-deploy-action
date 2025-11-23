@@ -191,17 +191,20 @@ runs:
           done <<< "${{ inputs.middleware }}"
         fi
 
-        # Execute command and capture output
+        # Execute command with real-time output streaming
         echo "Executing: $CMD"
-        OUTPUT=$(eval $CMD 2>&1)
-        EXIT_CODE=$?
 
-        echo "$OUTPUT"
+        # Use tee to show output in real-time AND capture it for parsing
+        eval $CMD 2>&1 | tee /tmp/scotty-output.txt
+        EXIT_CODE=${PIPESTATUS[0]}
 
         if [ $EXIT_CODE -ne 0 ]; then
           echo "Failed to create application"
           exit $EXIT_CODE
         fi
+
+        # Read captured output for parsing
+        OUTPUT=$(cat /tmp/scotty-output.txt)
 
         # Extract URLs (all lines containing https://)
         URLS=$(echo "$OUTPUT" | grep -o 'https://[^ ]*' || echo "")
@@ -224,16 +227,14 @@ runs:
 
         echo "Destroying Scotty application: ${{ inputs.app-name }}"
 
-        # Build docker command
-        OUTPUT=$(docker run --rm \
+        # Execute docker command with real-time output streaming
+        docker run --rm \
           -e SCOTTY_SERVER="${{ inputs.scotty-server }}" \
           -e SCOTTY_ACCESS_TOKEN="${{ inputs.scotty-token }}" \
           ghcr.io/factorial-io/scotty:${{ inputs.scottyctl-version }} \
-          /app/scottyctl app:destroy ${{ inputs.app-name }} 2>&1)
+          /app/scottyctl app:destroy ${{ inputs.app-name }} 2>&1 | tee /tmp/scotty-destroy-output.txt
 
-        EXIT_CODE=$?
-
-        echo "$OUTPUT"
+        EXIT_CODE=${PIPESTATUS[0]}
 
         if [ $EXIT_CODE -ne 0 ]; then
           echo "Failed to destroy application"
