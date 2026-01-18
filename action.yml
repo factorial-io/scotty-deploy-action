@@ -80,7 +80,7 @@ inputs:
   scottyctl-version:
     description: 'Docker image tag for scottyctl'
     required: false
-    default: 'next'
+    default: 'main'
 
 outputs:
   app-url:
