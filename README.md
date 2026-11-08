@@ -45,7 +45,7 @@ That's it! Your app is now deployed with automatic HTTPS, routing, and monitorin
 | `env-file` | | | Path to environment file |
 | `registry` | | | Private registry name (must be configured on server) |
 | `middleware` | | | Traefik middleware name(s). Multi-line supported. |
-| `scottyctl-version` | | `next` | Docker image tag for scottyctl |
+| `scottyctl-version` | | `main` | Docker image tag for scottyctl |
 
 \* Required unless `app-blueprint` is specified
 
@@ -248,7 +248,7 @@ When exposing multiple services, `app-url` output contains multiple URLs (one pe
 ## Links
 
 - [Scotty Documentation](https://github.com/factorial-io/scotty)
-- [scottyctl CLI Reference](https://github.com/factorial-io/scotty/blob/next/docs/content/cli.md)
+- [scottyctl CLI Reference](https://github.com/factorial-io/scotty/blob/main/docs/content/cli.md)
 - [Report Issues](https://github.com/factorial-io/scotty-deploy-action/issues)
 
 ## License
